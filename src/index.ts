@@ -86,11 +86,16 @@ app.post("/users", (req, res) => {
 });
 
 app.post("/channel", (req, res) => {
-  const channel: Channel = req.body;
+  const { channelName } = req.body;
 
-  if (channels.find((c) => c.name === channel.name)) {
+  if (channels.find((c) => c.name === channelName)) {
     return res.status(400).json({ message: "channel already exists" });
   }
+
+  const channel = {
+    id: randomUUID(),
+    name: channelName,
+  };
 
   channels.push(channel);
 
