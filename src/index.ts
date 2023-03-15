@@ -24,7 +24,7 @@ type Message = {
   id: string;
   channelId: string;
   userId: string;
-  message: string;
+  text: string;
 };
 
 type User = {
@@ -64,6 +64,19 @@ io.on("connection", (socket) => {
       ...u,
       isOnline: onlineUserIds.includes(u.id),
     }));
+
+    io.emit("usersFetch", onlineUsers);
+  });
+
+  socket.on("logOut", (userId) => {
+    onlineUserIds = onlineUserIds.filter((uid) => uid !== userId);
+
+    const onlineUsers = users.map((u) => {
+      return {
+        ...u,
+        isOnline: onlineUserIds.includes(u.id),
+      };
+    });
 
     io.emit("usersFetch", onlineUsers);
   });
