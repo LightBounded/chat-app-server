@@ -41,8 +41,17 @@ let onlineUserIds: string[] = [];
 io.on("connection", (socket) => {
   console.log("a user has connected");
 
-  socket.on("messageCreate", (message) => {
-    const newMessage = { ...message, id: randomUUID() };
+  socket.on("messagesFetch", () => {
+    io.emit("messagesFetch", messages);
+  });
+
+  socket.on("messageCreate", ({ messageText, channelId, userId }) => {
+    const newMessage = {
+      text: messageText,
+      channelId,
+      userId,
+      id: randomUUID(),
+    };
     messages.push(newMessage);
     io.emit("messageCreate", newMessage);
   });
@@ -69,6 +78,8 @@ io.on("connection", (socket) => {
       isOnline: onlineUserIds.includes(u.id),
     }));
 
+    users = onlineUsers;
+
     io.emit("usersFetch", onlineUsers);
   });
 
@@ -84,20 +95,27 @@ io.on("connection", (socket) => {
       };
     });
 
+    users = onlineUsers;
+
     io.emit("usersFetch", onlineUsers);
   });
 
   socket.on("channelCreate", (channelName: string) => {
+    if (channels.find((c) => c.name === channelName)) return;
+
     const newChannel = { name: channelName, id: randomUUID() };
     channels.push(newChannel);
     io.emit("channelCreate", newChannel);
+  });
+
+  socket.on("channelsFetch", () => {
+    io.emit("channelsFetch", channels);
   });
 
   socket.on("disconnect", () => {
     console.log("a user has disconnected");
   });
 });
-
 
 server.listen(3000, () => {
   console.log("Server is running on port 3000");
