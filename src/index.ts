@@ -52,12 +52,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("userCreate", (username) => {
+    if (users.find((u) => u.username === username)) return;
+
     const newUser = { username, isOnline: false, id: randomUUID() };
     users.push(newUser);
     io.emit("userCreate", newUser);
   });
 
   socket.on("logIn", (userId) => {
+    if (onlineUserIds.includes(userId)) return;
+
     onlineUserIds.push(userId);
 
     const onlineUsers = users.map((u) => ({
@@ -69,6 +73,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("logOut", (userId) => {
+    if (!onlineUserIds.includes(userId)) return;
+
     onlineUserIds = onlineUserIds.filter((uid) => uid !== userId);
 
     const onlineUsers = users.map((u) => {
@@ -92,25 +98,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// app.post("/login", (req, res) => {
-//   const { userId } = req.body;
-
-//   if (!onlineUserIds.includes(userId)) {
-//     onlineUserIds.push(userId);
-//   }
-
-//   res.status(200).send();
-// });
-
-// app.post("/logout", (req, res) => {
-//   const { userId } = req.body;
-
-//   if (onlineUserIds.includes(userId)) {
-//     onlineUserIds = onlineUserIds.filter((id) => id === userId);
-//   }
-
-//   res.status(200).send();
-// });
 
 server.listen(3000, () => {
   console.log("Server is running on port 3000");
