@@ -46,6 +46,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("messageCreate", ({ messageText, channelId, userId }) => {
+    if (!messageText) return;
     const newMessage = {
       text: messageText,
       channelId,
@@ -62,7 +63,6 @@ io.on("connection", (socket) => {
 
   socket.on("userCreate", (username) => {
     if (users.find((u) => u.username === username)) return;
-
     const newUser = { username, isOnline: false, id: randomUUID() };
     users.push(newUser);
     io.emit("userCreate", newUser);
@@ -70,39 +70,30 @@ io.on("connection", (socket) => {
 
   socket.on("logIn", (userId) => {
     if (onlineUserIds.includes(userId)) return;
-
     onlineUserIds.push(userId);
-
     const onlineUsers = users.map((u) => ({
       ...u,
       isOnline: onlineUserIds.includes(u.id),
     }));
-
     users = onlineUsers;
-
     io.emit("usersFetch", onlineUsers);
   });
 
   socket.on("logOut", (userId) => {
     if (!onlineUserIds.includes(userId)) return;
-
     onlineUserIds = onlineUserIds.filter((uid) => uid !== userId);
-
     const onlineUsers = users.map((u) => {
       return {
         ...u,
         isOnline: onlineUserIds.includes(u.id),
       };
     });
-
     users = onlineUsers;
-
     io.emit("usersFetch", onlineUsers);
   });
 
   socket.on("channelCreate", (channelName: string) => {
-    if (channels.find((c) => c.name === channelName)) return;
-
+    if (channels.find((c) => c.name === channelName)  ) return;
     const newChannel = { name: channelName, id: randomUUID() };
     channels.push(newChannel);
     io.emit("channelCreate", newChannel);
